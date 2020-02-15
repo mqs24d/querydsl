@@ -287,6 +287,7 @@
                   <excludes>
                     <exclude>com/querydsl/jpa/Hibernate5Templates</exclude>
                     <exclude>com/querydsl/jpa/HibernateHandler</exclude>
+                    <exclude>com/querydsl/jpa/JPAExpressions</exclude>
                   </excludes>
                   <compatibilityType>BACKWARD_COMPATIBLE_USER</compatibilityType>
                   <dumpDetails>true</dumpDetails>
