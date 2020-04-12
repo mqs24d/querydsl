@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.mysema.commons.lang.CloseableIterator;
 import com.querydsl.core.ResultTransformer;
@@ -34,7 +35,7 @@ import com.querydsl.core.types.FactoryExpressionUtils;
  */
 public class GroupByBuilder<K> {
 
-    private final Expression<K> key;
+    protected final Expression<K> key;
 
     /**
      * Create a new GroupByBuilder for the given key expression
@@ -73,6 +74,16 @@ public class GroupByBuilder<K> {
      */
     public ResultTransformer<List<Group>> list(Expression<?>... expressions) {
         return new GroupByList<K, Group>(key, expressions);
+    }
+
+    /**
+     * Get the results as a set
+     *
+     * @param expressions projection
+     * @return new result transformer
+     */
+    public ResultTransformer<Set<Group>> set(Expression<?>... expressions) {
+        return new GroupBySet<K, Group>(key, expressions);
     }
 
     /**
@@ -128,7 +139,24 @@ public class GroupByBuilder<K> {
         };
     }
 
-    private <V> Expression<V> getLookup(Expression<V> expression) {
+    /**
+     * Get the results as a set
+     *
+     * @param expression projection
+     * @return new result transformer
+     */
+    public <V> ResultTransformer<Set<V>> set(Expression<V> expression) {
+        final Expression<V> lookup = getLookup(expression);
+        return new GroupBySet<K, V>(key, expression) {
+            @Override
+            protected V transform(Group group) {
+                return group.getOne(lookup);
+            }
+        };
+    }
+
+
+    protected  <V> Expression<V> getLookup(Expression<V> expression) {
         if (expression instanceof GroupExpression) {
             @SuppressWarnings("unchecked") // This is the underlying type
             GroupExpression<V, ?> groupExpression = (GroupExpression<V, ?>) expression;
@@ -215,5 +243,26 @@ public class GroupByBuilder<K> {
         };
     }
 
+    /**
+     * Get the results as a list
+     *
+     * @param expression projection
+     * @return new result transformer
+     */
+    public <V> ResultTransformer<Set<V>> set(FactoryExpression<V> expression) {
+        final FactoryExpression<V> transformation = FactoryExpressionUtils.wrap(expression);
+        List<Expression<?>> args = transformation.getArgs();
+        return new GroupBySet<K, V>(key, args.toArray(new Expression<?>[args.size()])) {
+            @Override
+            protected V transform(Group group) {
+                // XXX Isn't group.toArray() suitable here?
+                List<Object> args = new ArrayList<Object>(groupExpressions.size() - 1);
+                for (int i = 1; i < groupExpressions.size(); i++) {
+                    args.add(group.getGroup(groupExpressions.get(i)));
+                }
+                return transformation.newInstance(args.toArray());
+            }
+        };
+    }
 
 }
