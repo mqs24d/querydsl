@@ -14,7 +14,6 @@
 package com.querydsl.core.group;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Sets;
 import com.mysema.commons.lang.CloseableIterator;
 import com.querydsl.core.FetchableQuery;
 import com.querydsl.core.Tuple;
@@ -23,24 +22,27 @@ import com.querydsl.core.types.FactoryExpression;
 import com.querydsl.core.types.FactoryExpressionUtils;
 import com.querydsl.core.types.Projections;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
- * Provides aggregated results as a set
+ * Provides aggregated results as a collection
  *
+ * @param <K> Key type
+ * @param <V> Value type
+ * @param <RES> Concrete collection type
  * @author Jan-Willem Gmelig Meyling
- *
- * @param <K> group by key type
- * @param <V> set value type
  */
-public class GroupBySet<K, V> extends AbstractGroupByTransformer<K, Set<V>> {
+public class GroupByGenericCollection<K, V, RES extends Collection<V>> extends AbstractGroupByTransformer<K, RES> {
 
-    GroupBySet(Expression<K> key, Expression<?>... expressions) {
+    private final ResultFactory<RES> resultFactory;
+
+    GroupByGenericCollection(ResultFactory<RES> resultFactory, Expression<K> key, Expression<?>... expressions) {
         super(key, expressions);
+        this.resultFactory = resultFactory;
     }
 
     @Override
-    public Set<V> transform(FetchableQuery<?,?> query) {
+    public RES transform(FetchableQuery<?, ?> query) {
         // create groups
         FactoryExpression<Tuple> expr = FactoryExpressionUtils.wrap(Projections.tuple(expressions));
         boolean hasGroups = false;
@@ -52,27 +54,27 @@ public class GroupBySet<K, V> extends AbstractGroupByTransformer<K, Set<V>> {
         }
         final CloseableIterator<Tuple> iter = query.select(expr).iterate();
 
-        Set<V> set = Sets.newHashSet();
+        RES list = resultFactory.create();
         GroupImpl group = null;
         K groupId = null;
         while (iter.hasNext()) {
             @SuppressWarnings("unchecked") //This type is mandated by the key type
-            K[] row = (K[]) iter.next().toArray();
+                    K[] row = (K[]) iter.next().toArray();
             if (group == null) {
                 group = new GroupImpl(groupExpressions, maps);
                 groupId = row[0];
             } else if (!Objects.equal(groupId, row[0])) {
-                set.add(transform(group));
+                list.add(transform(group));
                 group = new GroupImpl(groupExpressions, maps);
                 groupId = row[0];
             }
             group.add(row);
         }
         if (group != null) {
-            set.add(transform(group));
+            list.add(transform(group));
         }
         iter.close();
-        return set;
+        return list;
     }
 
     @SuppressWarnings("unchecked")

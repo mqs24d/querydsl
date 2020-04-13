@@ -13,9 +13,7 @@
  */
 package com.querydsl.core.group;
 
-import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
@@ -179,36 +177,6 @@ public class GuavaGroupByBuilder<K> extends GroupByBuilder<K> {
                 TreeBasedTable<K, C, V> results = TreeBasedTable.create(rowComparator, columnComparator);
                 for (Table.Cell<K, C, Group> entry : groups.cellSet()) {
                     results.put(entry.getRowKey(), entry.getColumnKey(), entry.getValue().getOne(lookup));
-                }
-                return results;
-            }
-        };
-    }
-
-    /**
-     * Get the results as a map
-     *
-     * @param expressions projection
-     * @return new result transformer
-     */
-    public ResultTransformer<BiMap<K, Group>> asBiMap(Expression<?>... expressions) {
-        return new GroupByBiMap<K, Group>(key, expressions);
-    }
-
-    /**
-     * Get the results as a map
-     *
-     * @param expression projection
-     * @return new result transformer
-     */
-    public <V> ResultTransformer<BiMap<K, V>> asBiMap(Expression<V> expression) {
-        final Expression<V> lookup = getLookup(expression);
-        return new GroupByBiMap<K, V>(key, expression) {
-            @Override
-            protected BiMap<K, V> transform(BiMap<K, Group> groups) {
-                BiMap<K, V> results = HashBiMap.create();
-                for (Map.Entry<K, Group> entry : groups.entrySet()) {
-                    results.put(entry.getKey(), entry.getValue().getOne(lookup));
                 }
                 return results;
             }

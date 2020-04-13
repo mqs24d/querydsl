@@ -16,6 +16,7 @@ package com.querydsl.core.group;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.Table;
+import com.google.common.collect.TreeBasedTable;
 import com.mysema.commons.lang.Pair;
 import com.querydsl.core.ResultTransformer;
 import com.querydsl.core.types.Expression;
@@ -312,6 +313,136 @@ public final class GuavaGroupBy extends GroupBy {
                                                                                                         GroupExpression<V, W> value) {
         return new GTable.Mixin<R, C, V, T, U, W, Table<T, U, W>>(
                 row, column, value, GTable.create(QPair.create(QPair.create(row, column), value)));
+    }
+
+    /**
+     * Create a new aggregating map expression using a backing LinkedHashMap
+     *
+     * @param row row for the table entries
+     * @param column column for the table entries
+     * @param value value for the table entries
+     * @return wrapper expression
+     */
+    public static <R, C, V> AbstractGroupExpression<Pair<Pair<R, C>, V>, TreeBasedTable<R, C, V>> sortedTable(Expression<R> row,
+                                                                                                              Expression<C> column,
+                                                                                                              Expression<V> value,
+                                                                                                              Comparator<? super R> rowComparator,
+                                                                                                              Comparator<? super C> columnComparator) {
+        return GTable.createSorted(QPair.create(QPair.create(row, column), value), rowComparator, columnComparator);
+    }
+
+    /**
+     * Create a new aggregating map expression using a backing LinkedHashMap
+     *
+     * @param row row for the table entries
+     * @param column column for the table entries
+     * @param value value for the table entries
+     * @return wrapper expression
+     */
+    public static <R, C, V, W> AbstractGroupExpression<Pair<Pair<R, C>, V>, TreeBasedTable<W, C, V>> sortedTable(GroupExpression<R, W> row,
+                                                                                                                 Expression<C> column,
+                                                                                                                 Expression<V> value,
+                                                                                                                 Comparator<? super W> rowComparator,
+                                                                                                                 Comparator<? super C> columnComparator) {
+        return GuavaGroupBy.<R, C, V, W, C, V>sortedTable(row, new GOne<C>(column), new GOne<V>(value), rowComparator, columnComparator);
+    }
+
+    /**
+     * Create a new aggregating map expression using a backing LinkedHashMap
+     *
+     * @param row row for the table entries
+     * @param column column for the table entries
+     * @param value value for the table entries
+     * @return wrapper expression
+     */
+    public static <R, C, V, W, X> AbstractGroupExpression<Pair<Pair<R, C>, V>, TreeBasedTable<W, X, V>> sortedTable(GroupExpression<R, W> row,
+                                                                                                                    GroupExpression<C, X> column,
+                                                                                                                    Expression<V> value,
+                                                                                                                    Comparator<? super W> rowComparator,
+                                                                                                                    Comparator<? super X> columnComparator) {
+        return GuavaGroupBy.<R, C, V, W, X, V> sortedTable(row, column, new GOne<V>(value), rowComparator, columnComparator);
+    }
+
+    /**
+     * Create a new aggregating map expression using a backing LinkedHashMap
+     *
+     * @param row row for the table entries
+     * @param column column for the table entries
+     * @param value value for the table entries
+     * @return wrapper expression
+     */
+    public static <R, C, V, W> AbstractGroupExpression<Pair<Pair<R, C>, V>, TreeBasedTable<R, W, V>> sortedTable(Expression<R> row,
+                                                                                                                 GroupExpression<C, W> column,
+                                                                                                                 Expression<V> value,
+                                                                                                                 Comparator<? super R> rowComparator,
+                                                                                                                 Comparator<? super W> columnComparator) {
+        return GuavaGroupBy.<R, C, V, R, W, V>sortedTable(new GOne<R>(row), column, new GOne<V>(value), rowComparator, columnComparator);
+    }
+
+    /**
+     * Create a new aggregating map expression using a backing LinkedHashMap
+     *
+     * @param row row for the table entries
+     * @param column column for the table entries
+     * @param value value for the table entries
+     * @return wrapper expression
+     */
+    public static <R, C, V, W, X> AbstractGroupExpression<Pair<Pair<R, C>, V>, TreeBasedTable<R, X, W>> sortedTable(Expression<R> row,
+                                                                                                                    GroupExpression<C, X> column,
+                                                                                                                    GroupExpression<V, W> value,
+                                                                                                                    Comparator<? super R> rowComparator,
+                                                                                                                    Comparator<? super X> columnComparator) {
+        return GuavaGroupBy.<R, C, V, R, X, W>sortedTable(new GOne<R>(row), column, value, rowComparator, columnComparator);
+    }
+
+    /**
+     * Create a new aggregating map expression using a backing LinkedHashMap
+     *
+     * @param row row for the table entries
+     * @param column column for the table entries
+     * @param value value for the table entries
+     * @return wrapper expression
+     */
+    public static <R, C, V, W, X> AbstractGroupExpression<Pair<Pair<R, C>, V>, TreeBasedTable<X, C, W>> sortedTable(GroupExpression<R, X> row,
+                                                                                                                    Expression<C> column,
+                                                                                                                    GroupExpression<V, W> value,
+                                                                                                                    Comparator<? super X> rowComparator,
+                                                                                                                    Comparator<? super C> columnComparator) {
+        return sortedTable(row, new GOne<C>(column), value, rowComparator, columnComparator);
+    }
+
+    /**
+     * Create a new aggregating map expression using a backing LinkedHashMap
+     *
+     * @param row row for the table entries
+     * @param column column for the table entries
+     * @param value value for the table entries
+     * @return wrapper expression
+     */
+    public static <R, C, V, W> AbstractGroupExpression<Pair<Pair<R, C>, V>, TreeBasedTable<R, C, W>> sortedTable(Expression<R> row,
+                                                                                                                 Expression<C> column,
+                                                                                                                 GroupExpression<V, W> value,
+                                                                                                                 Comparator<? super R> rowComparator,
+                                                                                                                 Comparator<? super C> columnComparator) {
+        return GuavaGroupBy.<R, C, V, R, C, W>sortedTable(new GOne<R>(row), new GOne<C>(column), value, rowComparator, columnComparator);
+    }
+
+
+    /**
+     * Create a new aggregating map expression using a backing LinkedHashMap
+     *
+     * @param row row for the table entries
+     * @param column column for the table entries
+     * @param value value for the table entries
+     * @return wrapper expression
+     */
+    public static <R, C, V, T, U, W> AbstractGroupExpression<Pair<Pair<R, C>, V>, TreeBasedTable<T, U, W>> sortedTable(GroupExpression<R, T> row,
+                                                                                                                       GroupExpression<C, U> column,
+                                                                                                                       GroupExpression<V, W> value,
+                                                                                                                       Comparator<? super T> rowComparator,
+                                                                                                                       Comparator<? super U> columnComparator) {
+        return new GTable.Mixin<R, C, V, T, U, W, TreeBasedTable<T, U, W>>(
+                row, column, value, GTable.createSorted(QPair.create(QPair.create(row, column), value), rowComparator, columnComparator));
     }
 
     private GuavaGroupBy() {

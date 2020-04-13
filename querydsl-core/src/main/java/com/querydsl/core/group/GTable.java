@@ -41,19 +41,19 @@ abstract class GTable<R, C, V, M extends Table<R, C, V>> extends AbstractGroupEx
         };
     }
 
-    public static <T extends Comparable<? super T>, U extends Comparable<? super U>, W> GTable<T, U, W, Table<T, U, W>> createSorted(QPair<Pair<T, U>, W> expr) {
-        return new GTable<T, U, W, Table<T, U, W>>(expr) {
+    public static <T extends Comparable<? super T>, U extends Comparable<? super U>, W> GTable<T, U, W, TreeBasedTable<T, U, W>> createSorted(QPair<Pair<T, U>, W> expr) {
+        return new GTable<T, U, W, TreeBasedTable<T, U, W>>(expr) {
             @Override
-            protected Table<T, U, W> createTable() {
+            protected TreeBasedTable<T, U, W> createTable() {
                 return TreeBasedTable.create();
             }
         };
     }
 
-    public static <T, U, W> GTable<T, U, W, Table<T, U, W>> createSorted(QPair<Pair<T, U>, W> expr, final Comparator<? super T> rowComparator, final Comparator<? super U> columnComparator) {
-        return new GTable<T, U, W, Table<T, U, W>>(expr) {
+    public static <T, U, W> GTable<T, U, W, TreeBasedTable<T, U, W>> createSorted(QPair<Pair<T, U>, W> expr, final Comparator<? super T> rowComparator, final Comparator<? super U> columnComparator) {
+        return new GTable<T, U, W, TreeBasedTable<T, U, W>>(expr) {
             @Override
-            protected Table<T, U, W> createTable() {
+            protected TreeBasedTable<T, U, W> createTable() {
                 return TreeBasedTable.create(rowComparator, columnComparator);
             }
         };

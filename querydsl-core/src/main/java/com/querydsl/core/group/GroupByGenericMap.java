@@ -13,8 +13,6 @@
  */
 package com.querydsl.core.group;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.mysema.commons.lang.CloseableIterator;
 import com.querydsl.core.FetchableQuery;
 import com.querydsl.core.Tuple;
@@ -23,23 +21,28 @@ import com.querydsl.core.types.FactoryExpression;
 import com.querydsl.core.types.FactoryExpressionUtils;
 import com.querydsl.core.types.Projections;
 
-/**
- * Provides aggregated results as a bi map
- *
- * @author Jan-Willem Gmelig Meyling
- *
- * @param <K>
- * @param <V>
- */
-public class GroupByBiMap<K,V> extends AbstractGroupByTransformer<K, BiMap<K,V>> {
+import java.util.Map;
 
-    GroupByBiMap(Expression<K> key, Expression<?>... expressions) {
+/**
+ * Provides aggregated results as a map
+ *
+ * @param <K> Map key type
+ * @param <V> Map value type
+ * @param <RES> Resulting map type
+ * @author Jan-Willem Gmelig Meyling
+ */
+public class GroupByGenericMap<K, V, RES extends Map<K, V>> extends AbstractGroupByTransformer<K, RES> {
+
+    private final ResultFactory<RES> mapFactory;
+
+    GroupByGenericMap(ResultFactory<RES> mapFactory, Expression<K> key, Expression<?>... expressions) {
         super(key, expressions);
+        this.mapFactory = mapFactory;
     }
 
     @Override
-    public BiMap<K, V> transform(FetchableQuery<?,?> query) {
-        BiMap<K, Group> groups = HashBiMap.create();
+    public RES transform(FetchableQuery<?, ?> query) {
+        Map<K, Group> groups = (Map) mapFactory.create();
 
         // create groups
         FactoryExpression<Tuple> expr = FactoryExpressionUtils.wrap(Projections.tuple(expressions));
@@ -54,7 +57,7 @@ public class GroupByBiMap<K,V> extends AbstractGroupByTransformer<K, BiMap<K,V>>
         try {
             while (iter.hasNext()) {
                 @SuppressWarnings("unchecked") //This type is mandated by the key type
-                K[] row = (K[]) iter.next().toArray();
+                        K[] row = (K[]) iter.next().toArray();
                 K groupId = row[0];
                 GroupImpl group = (GroupImpl) groups.get(groupId);
                 if (group == null) {
@@ -73,8 +76,8 @@ public class GroupByBiMap<K,V> extends AbstractGroupByTransformer<K, BiMap<K,V>>
     }
 
     @SuppressWarnings("unchecked")
-    protected BiMap<K, V> transform(BiMap<K, Group> groups) {
-        return (BiMap<K,V>) groups;
+    protected RES transform(Map<K, Group> groups) {
+        return (RES) groups;
     }
 
 }
