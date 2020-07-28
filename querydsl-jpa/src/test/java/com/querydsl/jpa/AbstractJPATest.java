@@ -47,9 +47,6 @@ import com.querydsl.jpa.domain.Company.Rating;
 import com.querydsl.jpa.domain4.QBookMark;
 import com.querydsl.jpa.domain4.QBookVersion;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-
 /**
  * @author tiwe
  *
@@ -296,7 +293,6 @@ public abstract class AbstractJPATest {
         assertEquals(1, query().from(cat).where(cat.kittens.any().kittens.any().name.eq("Ruth123")).fetchCount());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void arrayProjection() {
         List<String[]> results = query().from(cat)
@@ -420,9 +416,8 @@ public abstract class AbstractJPATest {
     }
 
     @Test
-    @NoEclipseLink // EclipseLink uses a left join for cat.mate
     public void case5() {
-        assertEquals(ImmutableList.of(0, 1, 1, 1),
+        assertEquals(ImmutableList.of(1, 0, 1, 1, 1, 1),
                 query().from(cat).orderBy(cat.id.asc())
                         .select(cat.mate.when(savedCats.get(0)).then(0).otherwise(1)).fetch());
     }
@@ -610,6 +605,7 @@ public abstract class AbstractJPATest {
 
     @Test
     @NoEclipseLink
+    @ExcludeIn(SQLSERVER)
     public void distinct_orderBy() {
         QCat cat = QCat.cat;
         List<Tuple> result = query().select(cat.id, cat.mate.id)
@@ -1212,12 +1208,12 @@ public abstract class AbstractJPATest {
 
     @Test
     public void max() {
-        assertEquals(6.0, query().from(cat).select(cat.bodyWeight.max()).fetchFirst().doubleValue(), 0.0001);
+        assertEquals(6.0, query().from(cat).select(cat.bodyWeight.max()).fetchFirst(), 0.0001);
     }
 
     @Test
     public void min() {
-        assertEquals(1.0, query().from(cat).select(cat.bodyWeight.min()).fetchFirst().doubleValue(), 0.0001);
+        assertEquals(1.0, query().from(cat).select(cat.bodyWeight.min()).fetchFirst(), 0.0001);
     }
 
     @Test
@@ -1519,7 +1515,7 @@ public abstract class AbstractJPATest {
 
     @Test
     @NoBatooJPA
-    @ExcludeIn(ORACLE)
+    @ExcludeIn({ORACLE, SQLSERVER})
     public void substring2() {
         QCompany company = QCompany.company;
         StringExpression name = company.name;
@@ -1576,21 +1572,21 @@ public abstract class AbstractJPATest {
 
     @Test
     @Ignore
-    public void sum() throws RecognitionException, TokenStreamException {
+    public void sum() {
         // NOT SUPPORTED
         query().from(cat).select(cat.kittens.size().sum()).fetch();
     }
 
     @Test
     @Ignore
-    public void sum_2() throws RecognitionException, TokenStreamException {
+    public void sum_2() {
         // NOT SUPPORTED
         query().from(cat).where(cat.kittens.size().sum().gt(0)).select(cat).fetch();
     }
 
     @Test
     public void sum_3() {
-        assertEquals(21.0, query().from(cat).select(cat.bodyWeight.sum()).fetchFirst().doubleValue(), 0.0001);
+        assertEquals(21.0, query().from(cat).select(cat.bodyWeight.sum()).fetchFirst(), 0.0001);
     }
 
     @Test
@@ -1664,25 +1660,26 @@ public abstract class AbstractJPATest {
     @Test
     public void sum_coalesce() {
         int val = query().from(cat).select(cat.weight.sum().coalesce(0)).fetchFirst();
-        assertTrue(val == 0);
+        assertEquals(0, val);
     }
 
     @Test
     public void sum_noRows_double() {
-        assertEquals(null, query().from(cat)
+        assertNull(query().from(cat)
                 .where(cat.name.eq(UUID.randomUUID().toString()))
                 .select(cat.bodyWeight.sum()).fetchFirst());
     }
 
     @Test
     public void sum_noRows_float() {
-        assertEquals(null, query().from(cat)
+        assertNull(query().from(cat)
                 .where(cat.name.eq(UUID.randomUUID().toString()))
                 .select(cat.floatProperty.sum()).fetchFirst());
     }
 
     @Test
     @NoEclipseLink @NoOpenJPA @NoBatooJPA
+    @ExcludeIn({ORACLE, SQLSERVER})
     public void test() {
         Cat kitten = savedCats.get(0);
         Cat noKitten = savedCats.get(savedCats.size() - 1);
@@ -1830,7 +1827,7 @@ public abstract class AbstractJPATest {
     }
 
     @Test
-    @ExcludeIn(DERBY)
+    @ExcludeIn({DERBY, ORACLE})
     public void byte_array() {
         QSimpleTypes simpleTypes = QSimpleTypes.simpleTypes;
         assertEquals(ImmutableList.of(), query().from(simpleTypes)

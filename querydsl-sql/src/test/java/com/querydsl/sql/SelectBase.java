@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -533,7 +534,7 @@ public class SelectBase extends AbstractBaseTest {
         DateTimeExpression<java.util.Date> dt = Expressions.currentTimestamp();
 
         add(exprs, SQLExpressions.addYears(dt, 1));
-        add(exprs, SQLExpressions.addMonths(dt, 1));
+        add(exprs, SQLExpressions.addMonths(dt, 1), ORACLE);
         add(exprs, SQLExpressions.addDays(dt, 1));
         add(exprs, SQLExpressions.addHours(dt, 1), TERADATA);
         add(exprs, SQLExpressions.addMinutes(dt, 1), TERADATA);
@@ -569,6 +570,11 @@ public class SelectBase extends AbstractBaseTest {
             int diff2 = query.select(SQLExpressions.datediff(dp, employee.datefield, date)).fetchFirst();
             int diff3 = query2.select(SQLExpressions.datediff(dp, employee.datefield, employee2.datefield)).fetchFirst();
             assertEquals(diff1, -diff2);
+        }
+
+        Timestamp timestamp = new Timestamp(new java.util.Date().getTime());
+        for (DatePart dp : dps) {
+            query.select(SQLExpressions.datediff(dp, Expressions.currentTimestamp(), timestamp)).fetchOne();
         }
     }
 
@@ -1177,7 +1183,7 @@ public class SelectBase extends AbstractBaseTest {
     }
 
     @Test
-    @ExcludeIn(FIREBIRD) // FIXME
+    @ExcludeIn({FIREBIRD, SQLSERVER}) // FIXME
     public void math2() {
         math(Expressions.constant(0.5));
     }
@@ -2119,7 +2125,7 @@ public class SelectBase extends AbstractBaseTest {
     }
 
     @Test
-    @ExcludeIn(DERBY)
+    @ExcludeIn({DB2, DERBY, ORACLE, SQLSERVER})
     public void groupConcat() {
         List<String> expected = ImmutableList.of("Mike,Mary", "Joe,Peter,Steve,Jim", "Jennifer,Helen,Daisy,Barbara");
         if (Connections.getTarget() == POSTGRESQL) {
@@ -2133,7 +2139,7 @@ public class SelectBase extends AbstractBaseTest {
     }
 
     @Test
-    @ExcludeIn(DERBY)
+    @ExcludeIn({DB2, DERBY, ORACLE, SQLSERVER})
     public void groupConcat2() {
         List<String> expected = ImmutableList.of("Mike-Mary", "Joe-Peter-Steve-Jim", "Jennifer-Helen-Daisy-Barbara");
         if (Connections.getTarget() == POSTGRESQL) {

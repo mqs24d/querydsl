@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.querydsl</groupId>
     <artifactId>querydsl-root</artifactId>
-    <version>4.2.1</version>
+    <version>4.4.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -60,6 +60,12 @@
       <version>${hsqldb.version}</version>
       <scope>test</scope>
       <!-- license : TODO -->
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.db2</groupId>
+      <artifactId>jcc</artifactId>
+      <version>${db2.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.derby</groupId>
@@ -271,16 +277,6 @@
           <artifactId>teradata-config</artifactId>
           <version>${teradata.version}</version>
           <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>db2</id>
-      <dependencies>
-        <dependency>
-          <groupId>com.ibm.db2</groupId>
-          <artifactId>db2-jdbc</artifactId>
-          <version>1.0</version>
         </dependency>
       </dependencies>
     </profile>
